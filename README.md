@@ -53,6 +53,8 @@ As a personal opinion, a 2.2 kernel is the perfect balance to start with: comple
 
 ## Installation
 
+You need `git lfs` installed for long file system support.
+
 ```bash
 git clone https://github.com/josepuga/project225
 cd project225

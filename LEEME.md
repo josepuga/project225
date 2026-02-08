@@ -53,6 +53,7 @@ Como opinión personal, un kernel 2.2 es el equilibro perfecto para empezar: suf
 
 ## Instalación
 
+Necesitas tener instalado `git lfs` para soporte de ficheros grandes.
 ```bash
 git clone https://github.com/josepuga/project225
 cd project225

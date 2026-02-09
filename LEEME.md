@@ -17,6 +17,8 @@
       - [Script utilizados por tester](#script-utilizados-por-tester)
 - [Prueba de concepto: Nuestro primer "Zinux" compilado](#prueba-de-concepto-nuestro-primer-zinux-compilado)
 - [Borrador: Política de uso de Zig](#borrador-política-de-uso-de-zig)
+- [Resolución de problemas](#resolución-de-problemas)
+  - 
 
 ## ¿Qué es este engendro?
 
@@ -53,7 +55,6 @@ Como opinión personal, un kernel 2.2 es el equilibro perfecto para empezar: suf
 
 ## Instalación
 
-Necesitas tener instalado `git lfs` para soporte de ficheros grandes.
 ```bash
 git clone https://github.com/josepuga/project225
 cd project225
@@ -167,3 +168,54 @@ El siguiente documento es un tutorial paso a pasa para compilar nuestro primer k
 Aquí intento explicar cómo se usa Zig en el Kernel, la forma de compilarse y sus limitaciones.
 
 [Leer más](doc/zig-policy-es.md). Disponible sólo en español.
+
+## Resolución de problemas
+
+### Red no funciona en las VM
+Hay que tener instalado ejecutándose `libvirtd` y tener la utilidad `virsh`. `systemctl status libvirtd` para comprobar que tenemos libvirtd activo.
+
+Activamos `virsh`:
+```bash
+# De forma temporal
+sudo virsh net-start default
+# De forma persistente
+sudo virsh net-autostart default
+```
+Libvirt nos permite usar un puente de red para comunicar por las VM con nuestro hosts. El nombre del puente podemos saberlo con:
+
+```bash
+ip link show type bridge
+```
+Debería aparecer `virbr0`.
+
+El dispoistiv que nos aparezca, debemos ponernlo en `/etc/qemu/bridget.com`. 
+```
+allow virbr0
+```
+>Si te apareciera otro dispositivo distinto a `virbr0` Editar `bin/run-vm.sh` y modificar la variable virt_dev
+
+#### Fedora
+Tube que añadir al usuario a grupo libvirt. 
+
+```bash
+sudo usermod -aG libvirt <your user>
+```
+
+#### Debian
+Sticky bit en qemu-bridge-helper. (?)
+
+```bash
+sudo chmod u+s /usr/lib/qemu/qemu-bridge-helper
+```
+
+### No puedo salir de la shell de la VM
+Si mostrar la ventana de la VM está desactiado, es que pusiste en `run-vm.sh`
+``bash
+show_vm=0
+```
+Al apagar la VM, la shell del host sigue esperando la entrada por la salida serie de la VM.
+
+Ejecuta el script `kill-vm.sh` para cerrarla completamente.
+
+>TIP: Es buena idea teclear `reset` después de esto ya que algunas shells pueden quedarse corruptas y no mostrar el `echo` bien o motrar caracteres raros.
+

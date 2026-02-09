@@ -17,6 +17,7 @@
       - [Script used by tester](#script-used-by-tester)
 - [Proof of concept: Our first "Zinux" build](#proof-of-concept-our-first-zinux-build)
 - [Draft: Zig Usage Policy](#draft-zig-usage-policy)
+- [Troubleshooting](#troubleshooting)
 
 ## What is this monstrosity?
 
@@ -168,3 +169,55 @@ The following document is a step by step tutorial to compile our first kernel by
 Here I try to explain how Zig is used in the Kernel, how it is compiled and its limitations.
 
 [Read more](doc/zig-policy-es.md). Available only in Spanish.
+
+
+## Troubleshooting
+
+### Network not working on VMs
+You need to have the `virsh` utility and `libvirtd` installed and running. Use `systemctl status libvirtd` to check that libvirtd is active.
+
+Activate `virsh`:
+```bash
+# Temporarily
+sudo virsh net-start default
+# Persistently
+sudo virsh net-autostart default
+```
+Libvirt allows us to use a network bridge to communicate between the VMs and our host. We can find out the name of the bridge with:
+
+```bash
+ip link show type bridge
+```
+`virbr0` should appear.
+
+We must put it in `/etc/qemu/bridget.com`.
+```
+allow virbr0
+```
+>If another device different from `virbr0` appears, edit `bin/run-vm.sh` and modify the variable virt_dev
+
+#### Fedora
+I had to add the user to the libvirt group.
+
+```bash
+sudo usermod -aG libvirt <your user>
+```
+
+#### Debian
+Sticky bit on qemu-bridge-helper. (?)
+
+```bash
+sudo chmod u+s /usr/lib/qemu/qemu-bridge-helper
+```
+
+### I can't exit the VM shell
+If showing the VM window is disabled, it means you set in `run-vm.sh`
+``bash
+show_vm=0
+```
+
+When shutting down the VM, the host shell keeps waiting for input from the VM's serial output.
+
+Run the script `kill-vm.sh` to close it completely.
+
+>TIP: It is a good idea to type `reset` after this since some shells may become corrupted and not display the `echo` properly or show strange characters.

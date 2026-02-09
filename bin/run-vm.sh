@@ -18,6 +18,8 @@ role="${1:-}"
     exit 1
 }
 
+virt_dev=virbr0
+
 declare -A vm_builder
 declare -A vm_tester
 
@@ -34,7 +36,7 @@ vm_builder=(
     #["iso_file"]=iso/slackware81.iso
     ["boot_drive"]=c
     ["rtc"]="base=localtime"
-    ["netdev"]="bridge,id=net0,br=virbr0" 
+    ["netdev"]="bridge,id=net0,br=$virt_dev" 
     ["device"]="ne2k_pci,netdev=net0,mac=00:00:02:02:05:81"
     ["vga"]=cirrus
 )
@@ -49,7 +51,7 @@ vm_tester=(
     #["iso_file"]=iso/slackware71.iso
     ["boot_drive"]=c
     ["rtc"]="base=localtime"
-    ["netdev"]="bridge,id=net0,br=virbr0"
+    ["netdev"]="bridge,id=net0,br=$virt_dev"
     ["device"]="ne2k_pci,netdev=net0,mac=00:00:02:02:05:71"
     ["vga"]=cirrus
 )
@@ -72,25 +74,32 @@ bridge_conf=/etc/qemu/bridge.conf
 [ ! -f "$bridge_conf" ] && {
     echo "Error: $bridge_conf not found"
     echo 
-    echo "This file is necessary to grant QEMU net bridger permissions without run as root"
+    echo "This file is necessary to grant QEMU net bridge permissions without run as root"
     echo "Usually is created by libvirt. After install it, must be exists."
     exit 1
 }
 
 bridge=$(grep ^allow "$bridge_conf" 2>/dev/null | head -1 | cut -f 2 -d " " ) || true
+echo "Net bridge $bridge detected!".
 
+#  Check bridge allowed
 [ "$bridge" = "" ] && {
     echo "Error: not allowed bridget in $bridge_conf"
     echo
     echo "QEMU can only run explicit authorized bridgets."
     echo "Try to add in $bridge_conf this line:"
-    echo "allow virbr0"
+    echo "allow $virt_dev"
     exit 1
 }
 
-echo "Net bridge $bridge detected"
-echo "Be sure libvirtd is active: systemctl status libvirtd"
+# libvirtd running?
+if ! systemctl is-active --quiet libvirtd; then
+    echo "Error: Service libvirtd seems to be inactive."
+    echo "Be sure libvirtd is active: systemctl status libvirtd"
+    exit 1
+fi
 
+# Common options
 qemu_args=(
     qemu-system-i386
     -name "${vm[name]}"
@@ -133,6 +142,22 @@ qemu_args=(
 qemu_args+=(
     # Mejorar la velocidad de la CPU. ideal para compilar
     -enable-kvm -cpu host
+)
+
+# PID / Socket (to kill/stop)
+d="${XDG_RUNTIME_DIR:-/tmp}"
+pid_file="$d/vm-$role.pid"
+qmp_file="$d/vm-$role.qmp"   #Unix Socket!
+
+# First check if the vm is already running.
+if [[ -f "$pid_file" ]] && kill -0 "$(<"$pid_file")" 2>/dev/null; then
+    echo "The VM $role is still running. close it or use: kill-vm $role".
+    exit 1
+fi
+
+qemu_args+=(
+    -pidfile "$pid_file"
+    -qmp "unix:$qmp_file,server,nowait"
 )
 
 printf '%q ' "${qemu_args[@]}"

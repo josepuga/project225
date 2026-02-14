@@ -134,6 +134,6 @@ echo
 echo "$out_path/$obj_file created!"
 echo
 echo "Generating $out_path/override.mk"
-"$(dirname "$0")"/gen_override.py
+"$(dirname "$0")"/gen-override.py
 echo
 nm "$out_path/$obj_file"

@@ -1,0 +1,7 @@
+# Put here all the objects that you want to link with the kernel
+# "zig/" is the zig of VM "/usr/src/linux/zig"
+#source/linux/path/file.o:zig/file.o
+#init/version.o:zig/version.o
+
+init/version.o:zig/version.o
+kernel/panic.o:zig/panic.o

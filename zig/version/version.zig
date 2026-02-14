@@ -1,5 +1,6 @@
 // zig/version.zig
-// Project225 - Replacement for init/version.c (Linux 2.2)
+// Project225 - Replacement for init/version.c (Linux 2.2.5)
+// By José Puga 2026
 
 const std = @import("std");
 const common = @import("common");

@@ -51,7 +51,10 @@ En él se incluye impreso todo el código fuente del kernel 2.2.5. Sí, has leid
 
 Este proyecto ha sido la sinergia perfecta para aprender más sobre el funcionamiento interno del kernel de Linux y empezar con Zig. ¿Qué mejor que aprender ambos reescribiendo el kernel en Zig?.
 
-Como opinión personal, un kernel 2.2 es el equilibro perfecto para empezar: suficientemente complejo para no aburrirte, pero no tanto para abrumarte.
+Como opinión personal, un kernel 2.2 es el equilibro perfecto para empezar:
+* suficientemente complejo para enseñar
+* suficientemente pequeño para entender
+* suficientemente antiguo para no importar
 
 ## Instalación
 

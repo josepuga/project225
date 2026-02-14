@@ -27,6 +27,13 @@ pub fn build(b: *std.Build) void {
     });
     // This allow use the module without extension, like system ones.
     root_mod.addImport("common", common_mod);
+    const string_mod = b.createModule(.{
+        .root_source_file = b.path("../_common_modules/string.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // This allow use the module without extension, like system ones.
+    root_mod.addImport("string", string_mod);
     // --- END common modules
 
     const obj = b.addObject(.{

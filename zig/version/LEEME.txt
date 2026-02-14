@@ -1,0 +1,7 @@
+Implementación Zig de init/version.c
+
+Estos ficheros generan el objeto ABI compatible con init/version.o
+
+Son parte de la "prueba de concepto" documentada en LEEME.md
+
+Bórralos si deseas hacer el tutorial.
